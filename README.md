@@ -11,6 +11,11 @@ If you are on Mac, the code will use the SCImage class to flash up an alien lang
 
 The project contains a subfolder, "IR", which contains some example impulse responses from open internet sources (links in the Xenophoneclient.scd file, files renamed for convenience). If anyone has an issue with reuse of these impulse responses here, I am happy to remove them as required. Impulse responses can be mono or stereo but 44.1KHz is typically expected. Feel free to substitute any sound files, conventional impulse response or not, into your local copy of this folder.
 
+## Xenomusic album
+
+A short 18 minute album of 14 pieces of example xenomusic from the project is available for free listening on [bandcamp](https://sicklincoln.bandcamp.com/album/xenomusic) (also for download at pay what you want, 200 free downloads allowed per month).
+
+
 ## About
 
 **Xenomusic/Xenophones**
