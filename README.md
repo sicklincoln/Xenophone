@@ -34,7 +34,7 @@ The project here consists of two parts; 1) a music generator founded in a model 
 
 Synthesis is via a set of resonant filterbanks (with modes randomly picked) for more percussive sounds, and stretched string (stiff string equation) or frequency modulation algorithms for pitched voices (aliens making electronic music would surely discover such mathematical principles too, regardless of their home world acoustics). Voices can be percussive or tonal. Global effects are applied, including the potential for convolution reverb with an impulse response selected from a catalogue supplied (readily changed in the codebase).
 
-###The xenotext language generator
+### The xenotext language generator
 
 To create accompanying documentation of the xenomusical tradition:
 
