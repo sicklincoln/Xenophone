@@ -14,7 +14,8 @@ g.stop //stop any routines in progress
 g.universe; //keep playing new planets every 30 seconds to 5 minutes, 'infinite listening' mode
 
 
-
+//creates 600 individual png image files, ready to stitch together into a movie (e.g.with Processing Movie Maker)
+g.video("/Users/ioi/Desktop/xenovideo/",600,540,960) //defaults to tik tok size for mobile comes out as 1080 by 1920
 
 
 
