@@ -9,7 +9,7 @@
 	//simply make words, then related variants for qualifiers (either common variation pattern or exceptions)
 	//actually generalise notion of word type too
 	//more used words are shorter in general
-	video {|path, numframes = 300, width = 1080, height = 1920|
+	video {|path, numframes = 300, width = 1080, height = 1920, framenumoffset=0|
 		var w;
 		var numletters = rrand(4,26); //100
 		var numwords = rrand(500,10000);
@@ -34,7 +34,7 @@
 		var bckcol = Color.rand;
 		//Pen.font = font;
 		var matrix = [1,[0,0.2.rand,rrand(0.1,3.0)].choose, [0,0.2.rand,rrand(0.1,3.0)].choose, 1, 0, 0];
-		var rotationflag = true; //0.5.coin;
+		var rotationflag = 0.5.coin;
 		var penwidth = rrand(0.5,3.0);
 		var matrixflag = 0.2.coin;
 		var framecounter = 0;
@@ -42,12 +42,12 @@
 		var penoffset = if(rotationflag, rrand(heighthalfway.neg,heighthalfway), rrand(10,widthhalfway));
 		var rightleft = 0.5.coin;
 		var changechance = [1.0,0.05,exprand(0.01,0.5)].choose; //, 0.01,rrand(0.001,0.1)
-
+		var setuplanguage;
 
 		bckcol.alpha = 1.0.rand;
 
 
-		arraytostring = {|array|  array.collect({|x| {x.asInteger.asAscii}.try ? "" }).join};
+		setuplanguage = { arraytostring = {|array|  array.collect({|x| {x.asInteger.asAscii}.try ? "" }).join};
 
 		letters = (21..127).scramble.copyRange(0,numletters-1); //Array.rand(numletters,21,127)
 
@@ -111,6 +111,10 @@
 			sentencestring
 		};
 
+		};
+
+		setuplanguage.();
+
 		utterences = {|j| utterfunc.(j)}!rrand(30,300);
 
 
@@ -140,7 +144,7 @@
 
 				if(0.1.coin) {
 
-					changechance = [1.0,0.05,exprand(0.01,0.5)].choose;
+					changechance = [1.0,0.05,exprand(0.01,0.5),rrand(0.001,0.1)].choose;
 
 				};
 
@@ -151,7 +155,7 @@
 
 					framecounter = rrand(0,50);
 
-					drawrate = rrand(0.125,4.0);
+					drawrate = rrand(0.05,6.0);
 
 					penoffset = if(rotationflag, rrand(heighthalfway.neg,heighthalfway), rrand(10,widthhalfway));
 
@@ -161,7 +165,15 @@
 					if(0.2.coin) {
 					Pen.strokeColor = Color.rand;
 					w.view.background_(Color.rand);
-					}
+					};
+
+					//change language
+					if(0.2.coin) {
+
+						setuplanguage.();
+						rotationflag = 0.5.coin;
+
+					};
 
 					//Pen.strokeColor = Color.rand;
 				};
@@ -206,23 +218,44 @@
 
 			var image;
 
-			numframes.do {|framenum|
+			var maxpadding = (numframes+framenumoffset-1).asString.size - 1;
+			//"10000".size
+
+			numframes.do {|fnum|
+
+				var framenum = fnum + framenumoffset;
+				var framestring = framenum.asString;
+				var padding;
+				var tempstring;
+
+				//processing file naming convention requires this (assumes numframes <10000)
+				//pad framestring
+				padding = framestring.size - maxpadding;
+
+				if( padding > 0) {
+
+					tempstring = "";
+					padding.do{tempstring = tempstring + "0";};
+
+					framestring = tempstring ++ framestring;
+
+				};
 
 				//jump color, pen size, perturb matrix etc
 
 				w.refresh;
 
-				0.05.wait;
+				0.1.wait;
 
 				image = Image.fromWindow(w);
 
 				//process image?
 
-				image.write(((path??{"~/Desktop/output/"})++"xenoframe"++(framenum.asString)++".png").standardizePath,"png");
+				image.write(((path??{"~/Desktop/output/"})++"xenoframe"++framestring++".png").standardizePath,"png");
 
 				framecounter = framecounter + 1;
 
-				0.05.wait;
+				0.1.wait;
 
 			};
 

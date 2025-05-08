@@ -217,7 +217,7 @@ Xenophone {
 
 
 
-	play {|nrtflag = false duration = 200 effectdef|
+	play {|nrtflag = false duration = 200 effectdef nrtaction document=true|
 
 
 		var tonalorpercussive;
@@ -235,8 +235,11 @@ Xenophone {
 		var alwayspercussive = 0.5.coin; //no long attacks for percussive voicess
 
 		var toneplus = [0,15].choose;
+		var generationcounternow;
 
 		score = List[];
+
+		generationcounternow = Xenophone.generationcounter;
 
 		Xenophone.generationcounter = Xenophone.generationcounter + 1;
 
@@ -392,18 +395,18 @@ Xenophone {
 
 		[\numvoices,numvoices,\numvariations,numvariations, \cyclelength, cycleduration].postcs;
 
+		if(document) {
+		this.document(Xenophone.basepath++"xenodocument"++generationcounternow++".jpg",nrtflag);
+		};
 
-		this.document(Xenophone.basepath++"xenodocument"++Xenophone.generationcounter++".jpg");
 
 		if(nrtflag) {
 
-			filename = Xenophone.basepath++"xenomusic_"++Xenophone.generationcounter++".wav";
+			filename = Xenophone.basepath++"xenomusic_"++generationcounternow++".wav";
 
 			filename.postln;
 
 			//score = List[];
-
-
 		};
 
 
@@ -417,19 +420,18 @@ Xenophone {
 
 			s.sync;
 
-
 			if(0.5.coin) {
 
 				var irpath = PathName(PathName(Xenophone.filenameSymbol.asString).pathOnly ++ "IR").entries.collect{|val| val.fullPath}.choose;
 
 				if(nrtflag) {
-					score.postcs;
+					//score.postcs;
 
 					//score = score ++ (this.setConvolutionReverbNRT(irpath));
 
 					this.setConvolutionReverbNRT(irpath);
 
-					score.postcs;
+					//score.postcs;
 
 					"conv done".postln;
 
@@ -443,7 +445,7 @@ Xenophone {
 
 			starttime = Main.elapsedTime;
 
-			if(nrtflag,{var numcycles = (duration/cycleduration).roundUp.asInteger; duration = numcycles * cycleduration + 10.0; numcycles},inf).do{|whichcycle|
+			if(nrtflag,{var numcycles = (duration/cycleduration).roundUp.asInteger; duration = (numcycles * cycleduration) + 10.0; numcycles},inf).do{|whichcycle|
 
 				var variationnow = {|j| ([0,rrand(0,1.min(numvariations-1)),rrand(0,numvariations.div(2)),rrand(0,numvariations-1)].choose * numvoices) + j}!numvoices;
 				var patternsnow = patterns.at(variationnow);
@@ -491,11 +493,11 @@ Xenophone {
 
 							if(nrtflag) {
 
-
+								//was tonal part 0.01 amp, percussive 0.2
 
 								if(tonalorpercussive[j]) {
 
-									score.add([nrttime, [ \s_new, \Xenophonetone ++ (toneplus+j), -1, 0, 0, \freq, freqnow, \amp, 0.01, \pan, panpositions[j], \attacktime, envelopes[j][0],\sustaintime, durnow, \releasetime, envelopes[j][2]]]);
+									score.add([nrttime, [ \s_new, \Xenophonetone ++ (toneplus+j), -1, 0, 0, \freq, freqnow, \amp, 0.02, \pan, panpositions[j], \attacktime, envelopes[j][0],\sustaintime, durnow, \releasetime, envelopes[j][2]]]);
 
 								}
 								{
@@ -519,7 +521,7 @@ Xenophone {
 
 										//[\percussive, tonalorpercussive[j]].postln;
 
-										Synth.head(synthgroup,\Xenophonetone ++ (toneplus+j),[\freq,freqnow, \amp, 0.01, \pan, panpositions[j], \attacktime, envelopes[j][0],\sustaintime, durnow, \releasetime, envelopes[j][2]]);
+										Synth.head(synthgroup,\Xenophonetone ++ (toneplus+j),[\freq,freqnow, \amp, 0.02, \pan, panpositions[j], \attacktime, envelopes[j][0],\sustaintime, durnow, \releasetime, envelopes[j][2]]);
 
 									}
 									{
@@ -569,11 +571,12 @@ Xenophone {
 
 				serveroptions = ServerOptions.new;
 				serveroptions.numOutputBusChannels = 2; // stereo output
+				serveroptions.verbosity = -2;
 
 				//Score.recordNRT(score, "help-oscFile", filename, headerFormat:"WAV", sampleFormat:"int16", options: serveroptions); // synthesize
 
 				//recordNRTSCMIR
-				Score.recordNRT(score,Platform.defaultTempDir +/+ "help-oscFile", filename, headerFormat:"WAV", sampleFormat:"int24", options: serveroptions); // synthesize
+				Score.recordNRT(score,Platform.defaultTempDir +/+ "help-oscFile", filename, headerFormat:"WAV", sampleFormat:"int16", options: serveroptions,action:{nrtaction.(filename)}); // synthesize
 
 			};
 
@@ -705,8 +708,8 @@ Xenophone {
 		numchannels = soundfile.numChannels;
 
 		//PartConv.calcBufSize(fftsize, irbufferL);
-		bufsize = (numframes/(fftsize.div(2))).roundUp;
-
+		bufsize = fftsize * ((numframes/(fftsize.div(2))).roundUp);
+		bufsize2 = bufsize; //fftsize * ((numframes/(fftsize.div(2))).roundUp);
 
 		score.add([0.0,\b_allocReadChannel, 0, irpath, 0, 0, 0]);
 
@@ -738,7 +741,7 @@ Xenophone {
 		//irbufferR.free;
 
 		//convolutionreverb = Synth.tail(fxgroup,\XenophonePartConv,[\in,0,\out,0,\bufnumL,irspectrumL,\bufnumR,irspectrumR,\amp,0.3]);
-		score.add([0.0, [ \s_new, \XenophonePartConv, -1, 1, 0, \in,0,\out,0,\bufnumL,2,\bufnumR,3,\amp,0.3]]);
+		score.add([0.0, \s_new, \XenophonePartConv, -1, 1, 0, \in,0,\out,0,\bufnumL,2,\bufnumR,3,\amp,0.3]);
 
 
 		//^score;
