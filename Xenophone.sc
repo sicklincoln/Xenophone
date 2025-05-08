@@ -55,17 +55,19 @@ Xenophone {
 
 	}
 
-	*new {|foo=0|
+	*new {|nrt=false|
 
-		^super.new.initXenophone(foo);
+		^super.new.initXenophone(nrt);
 	}
 
 
-	initXenophone {|foo = 0|
+	initXenophone {|nrt = false|
 
 		s = Server.default;
 
 		//boot server if not running already
+
+		if(not(nrt)) {
 
 		s.waitForBoot({
 
@@ -85,6 +87,8 @@ Xenophone {
 			s.sync;
 
 		});
+
+		};
 
 		starttime = Main.elapsedTime;
 
@@ -245,6 +249,15 @@ Xenophone {
 
 
 
+		if(nrtflag) {
+
+			//node for effects at end of list
+			score.add([0.0, ["/g_new", 2, 1, 0]]);
+			//node for synths at start
+			score.add([0.0, ["/g_new", 3, 0, 0]]);
+		};
+
+
 
 		if(effectsynth.notNil) {effectsynth.release;  effectsynth = nil;};
 
@@ -254,7 +267,7 @@ Xenophone {
 
 			if(nrtflag) {
 
-				score.add([0.0, [ \s_new, effectdef, -1, 1, 0]]);
+				score.add([0.0, [ \s_new, effectdef, -1, 0, 2]]);
 
 			} {
 
@@ -418,9 +431,12 @@ Xenophone {
 
 			Xenophone.initSynthDefs(2,0); //2 channels, 0 input offset
 
+			if(not(nrtflag)) {
 			s.sync;
+			};
 
-			if(0.5.coin) {
+
+			if(1.5.coin) {
 
 				var irpath = PathName(PathName(Xenophone.filenameSymbol.asString).pathOnly ++ "IR").entries.collect{|val| val.fullPath}.choose;
 
@@ -493,11 +509,11 @@ Xenophone {
 
 							if(nrtflag) {
 
-								//was tonal part 0.01 amp, percussive 0.2
+								//tonal part 0.01 amp, percussive 0.2
 
 								if(tonalorpercussive[j]) {
 
-									score.add([nrttime, [ \s_new, \Xenophonetone ++ (toneplus+j), -1, 0, 0, \freq, freqnow, \amp, 0.02, \pan, panpositions[j], \attacktime, envelopes[j][0],\sustaintime, durnow, \releasetime, envelopes[j][2]]]);
+									score.add([nrttime, [ \s_new, \Xenophonetone ++ (toneplus+j), -1, 0, 3, \freq, freqnow, \amp, 0.01, \pan, panpositions[j], \attacktime, envelopes[j][0],\sustaintime, durnow, \releasetime, envelopes[j][2]]]);
 
 								}
 								{
@@ -506,7 +522,7 @@ Xenophone {
 									//if(alwayspercussive)
 									// \attacktime, if(alwayspercussive,0.001,envelopes[j][0]),\sustaintime, durnow.min(0.1)s, \releasetime, envelopes[j][2]
 
-									score.add([nrttime, [ \s_new, \Xenophonepercussion ++ j, -1, 0, 0, \amp, 0.2, \pan, panpositions[j],\attacktime, if(alwayspercussive,0.001,envelopes[j][0]),\sustaintime, durnow.min(0.1), \releasetime, envelopes[j][2]]]);
+									score.add([nrttime, [ \s_new, \Xenophonepercussion ++ j, -1, 0, 3, \amp, 0.2, \pan, panpositions[j],\attacktime, if(alwayspercussive,0.001,envelopes[j][0]),\sustaintime, durnow.min(0.1), \releasetime, envelopes[j][2]]]);
 
 
 								};
@@ -521,7 +537,7 @@ Xenophone {
 
 										//[\percussive, tonalorpercussive[j]].postln;
 
-										Synth.head(synthgroup,\Xenophonetone ++ (toneplus+j),[\freq,freqnow, \amp, 0.02, \pan, panpositions[j], \attacktime, envelopes[j][0],\sustaintime, durnow, \releasetime, envelopes[j][2]]);
+										Synth.head(synthgroup,\Xenophonetone ++ (toneplus+j),[\freq,freqnow, \amp, 0.01, \pan, panpositions[j], \attacktime, envelopes[j][0],\sustaintime, durnow, \releasetime, envelopes[j][2]]);
 
 									}
 									{
@@ -564,6 +580,9 @@ Xenophone {
 			if(nrtflag) {
 
 				"NRT render".postln;
+
+				//right at end
+				score.add([0.0, [ \s_new, \XenophoneMasterFX , -1, 1, 2]]);
 
 				score.add([duration, [\c_set, 0, 0]]);
 
@@ -711,13 +730,13 @@ Xenophone {
 		bufsize = fftsize * ((numframes/(fftsize.div(2))).roundUp);
 		bufsize2 = bufsize; //fftsize * ((numframes/(fftsize.div(2))).roundUp);
 
-		score.add([0.0,\b_allocReadChannel, 0, irpath, 0, 0, 0]);
+		score.add([0.0,[\b_allocReadChannel, 0, irpath, 0, 0, 0]]);
 
 
 		if(numchannels<2) {
-			score.add([0.0,\b_allocReadChannel, 1, irpath, 0, 0, 0]);
+			score.add([0.0,[\b_allocReadChannel, 1, irpath, 0, 0, 0]]);
 		} {
-			score.add([0.0,\b_allocReadChannel, 1, irpath, 0, 0, 1]);
+			score.add([0.0,[\b_allocReadChannel, 1, irpath, 0, 0, 1]]);
 		};
 
 
@@ -726,22 +745,22 @@ Xenophone {
 
 		//s.sync;
 
-		score.add([0.0,\b_alloc, 2, bufsize, 1]);
-		score.add([0.0,\b_alloc, 3, bufsize2, 1]);
+		score.add([0.0,[\b_alloc, 2, bufsize, 1]]);
+		score.add([0.0,[\b_alloc, 3, bufsize2, 1]]);
 
 		//irspectrumL = Buffer.alloc(s, bufsize, 1);
 		//irspectrumL.preparePartConv(irbufferL, fftsize);
 		//irspectrumR = Buffer.alloc(s, bufsize2, 1);
 		//irspectrumR.preparePartConv(irbufferR, fftsize);
 
-		score.add([0.0,\b_gen, 2, "PreparePartConv", 0, fftsize]);
-		score.add([0.0,\b_gen, 3, "PreparePartConv", 1, fftsize]);
+		score.add([0.0,[\b_gen, 2, "PreparePartConv", 0, fftsize]]);
+		score.add([0.0,[\b_gen, 3, "PreparePartConv", 1, fftsize]]);
 
 		//irbufferL.free; // don't need time domain data anymore, just needed spectral version
 		//irbufferR.free;
 
 		//convolutionreverb = Synth.tail(fxgroup,\XenophonePartConv,[\in,0,\out,0,\bufnumL,irspectrumL,\bufnumR,irspectrumR,\amp,0.3]);
-		score.add([0.0, \s_new, \XenophonePartConv, -1, 1, 0, \in,0,\out,0,\bufnumL,2,\bufnumR,3,\amp,0.3]);
+		score.add([0.0, [\s_new, \XenophonePartConv, -1, 1, 2, \in,0,\out,0,\bufnumL,2,\bufnumR,3,\amp,0.3]]);
 
 
 		//^score;
