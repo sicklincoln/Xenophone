@@ -436,7 +436,7 @@ Xenophone {
 			};
 
 
-			if(1.5.coin) {
+			if(0.5.coin) {
 
 				var irpath = PathName(PathName(Xenophone.filenameSymbol.asString).pathOnly ++ "IR").entries.collect{|val| val.fullPath}.choose;
 
