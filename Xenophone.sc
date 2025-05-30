@@ -466,9 +466,10 @@ Xenophone {
 				var variationnow = {|j| ([0,rrand(0,1.min(numvariations-1)),rrand(0,numvariations.div(2)),rrand(0,numvariations-1)].choose * numvoices) + j}!numvoices;
 				var patternsnow = patterns.at(variationnow);
 
+
 				//could make serial/sequential, or wxrand here rather than free choice
 				var frequenciesnow = freqsubsetbysection.next; //freqsubsets.choose;
-
+				//var postdata = [frequenciesnow,freqsubsetbysection,variationnow,patternsnow].postln;
 				var dronefreq = {frequenciesnow.choose}!numvoices;//if needed, one per voice
 				var dronessustain = {0.5.coin}!numvoices; //{0.5.coin}!numvoices;
 
@@ -591,6 +592,12 @@ Xenophone {
 				serveroptions = ServerOptions.new;
 				serveroptions.numOutputBusChannels = 2; // stereo output
 				serveroptions.verbosity = -2;
+
+				serveroptions.memSize = 81920*4;
+				serveroptions.numBuffers = 2048;
+				serveroptions.numWireBufs = 256; //128;
+
+
 
 				//Score.recordNRT(score, "help-oscFile", filename, headerFormat:"WAV", sampleFormat:"int16", options: serveroptions); // synthesize
 
@@ -778,12 +785,13 @@ Xenophone {
 	//more used words are shorter in general
 	document {|path|
 		var w;
-		var numletters = rrand(4,26); //100
+		var numletters = rrand(2,50.min(memorysize)); //memorysize; //rrand(4,50); //100
 		var numwords = rrand(500,10000);
-		var numtenses = rrand(3,20); //every word has multiple variations
+		var numtenses = rrand(3,20.min(memorysize)); //every word has multiple variations
 		var letters;
 		var words;
-		var numtypesofword = rrand(2,10);
+		var numtypesofword = rrand(2,10.min(memorysize));
+		var maxwordlength = rrand(10,40).min(memorysize*2);
 		//don't have to be equal size
 		var weights = ({exprand(0.01,1.0)}!numtypesofword).normalizeSum;
 		//var objectwords, actionwords, connectivewords;
@@ -798,9 +806,10 @@ Xenophone {
 
 		arraytostring = {|array|  array.collect({|x| {x.asInteger.asAscii}.try ? "" }).join};
 
+		//33 first non white space ascii, but go from 21 so introduce some white space characters into the mix
 		letters = (21..127).scramble.copyRange(0,numletters-1); //Array.rand(numletters,21,127)
 
-		words = { arraytostring.({letters.choose}!( rrand(1,rrand(1,10)) ) ) }!numwords;
+		words = { arraytostring.({letters.choose}!( rrand(1,rrand(1,maxwordlength)) ) ) }!numwords;
 		tensevariants = {  { arraytostring.({letters.choose}!( rrand(1,rrand(1,3)) ) ) }!(rrand(1,10)); }!numtenses;
 
 		//letters.postln;
